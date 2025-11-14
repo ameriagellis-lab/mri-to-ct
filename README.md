@@ -1,22 +1,21 @@
-# MRI to CT Converter (Web Interface)
+# MRI to CT Batch Converter (Web Interface)
 
-This project provides a simple web-based interface for converting **MRI scans to CT scans** using a backend machine-learning model.  
-Users can upload `.nii`, `.dcm`, or `.img` files through a clean HTML interface, and download the converted CT scan once processing is complete.
+This project provides a web-based tool that allows users to upload an **entire folder of MRI images** and receive a **batch of converted CT scans**. The frontend is built with HTML/JavaScript, and it communicates with a backend `/convert` endpoint that processes multiple MRI files at once.
 
 ---
 
 ## 🚀 Features
 
-- Upload MRI files directly from the browser  
-- Supported formats: **NIfTI (.nii), DICOM (.dcm), Analyze (.img)**  
-- Sends file to backend `/convert` API endpoint  
-- Displays download link for the generated CT image  
+- Upload **folders** containing multiple MRI files  
+- Supports `.nii`, `.dcm`, and `.img` formats  
+- Sends multiple files to the backend using `FormData`  
+- Backend returns a **ZIP file** containing the converted CT scans  
 - Clean, responsive HTML interface  
-- Fully compatible with Python/Flask, FastAPI, Node.js, or any backend that accepts file uploads
+- Compatible with Flask, FastAPI, Node.js, or other server frameworks
 
 ---
 
 ## 📁 Project Structure
 
-Example structure:
+A typical project layout might look like this:
 
