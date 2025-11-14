@@ -1,65 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MRI to CT Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 2em auto;
-            max-width: 500px;
-            padding: 1em;
-            background: #f8f8f8;
-            border-radius: 8px;
-        }
-        h1 { text-align: center; }
-        .form-group { margin-bottom: 1em; }
-        label { display: block; margin-bottom: 0.5em; }
-        input[type="file"] { margin-bottom: 1em; }
-        button { padding: 0.6em 1.5em; font-size: 1em; }
-        .result, .error { margin-top: 1em; }
-        .result a { color: #0077cc; }
-    </style>
-</head>
-<body>
-    <h1>MRI to CT Converter</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="mri">Choose an MRI file to upload:</label>
-            <input type="file" id="mri" name="mri" accept=".nii,.dcm,.img" required>
-        </div>
-        <button type="submit">Convert</button>
-    </form>
-    <div id="status"></div>
-    <div class="result" id="result"></div>
-    <div class="error" id="error"></div>
+# MRI to CT Converter (Web Interface)
 
-    <script>
-        document.getElementById('uploadForm').onsubmit = async function(event) {
-            event.preventDefault();
-            document.getElementById('status').textContent = 'Uploading and converting, please wait...';
-            document.getElementById('result').textContent = '';
-            document.getElementById('error').textContent = '';
-            let formData = new FormData(this);
+This project provides a simple web-based interface for converting **MRI scans to CT scans** using a backend machine-learning model.  
+Users can upload `.nii`, `.dcm`, or `.img` files through a clean HTML interface, and download the converted CT scan once processing is complete.
 
-            try {
-                let res = await fetch('/convert', {method: 'POST', body: formData});
-                if (!res.ok) {
-                    throw new Error('Conversion failed.');
-                }
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                document.getElementById('status').textContent = '';
-                document.getElementById('result').innerHTML = `
-                    <a href="${url}" download="ct_scan.png">
-                        ⬇️ Download Converted CT Scan
-                    </a>
-                `;
-            } catch (err) {
-                document.getElementById('status').textContent = '';
-                document.getElementById('error').textContent = err.message;
-            }
-        };
-    </script>
-</body>
-</html>
+---
+
+## 🚀 Features
+
+- Upload MRI files directly from the browser  
+- Supported formats: **NIfTI (.nii), DICOM (.dcm), Analyze (.img)**  
+- Sends file to backend `/convert` API endpoint  
+- Displays download link for the generated CT image  
+- Clean, responsive HTML interface  
+- Fully compatible with Python/Flask, FastAPI, Node.js, or any backend that accepts file uploads
+
+---
+
+## 📁 Project Structure
+
+Example structure:
+
