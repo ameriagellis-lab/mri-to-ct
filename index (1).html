@@ -1,65 +1,103 @@
-<!DOCTYPE html>
+```html
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>MRI to CT Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 2em auto;
-            max-width: 500px;
-            padding: 1em;
-            background: #f8f8f8;
-            border-radius: 8px;
-        }
-        h1 { text-align: center; }
-        .form-group { margin-bottom: 1em; }
-        label { display: block; margin-bottom: 0.5em; }
-        input[type="file"] { margin-bottom: 1em; }
-        button { padding: 0.6em 1.5em; font-size: 1em; }
-        .result, .error { margin-top: 1em; }
-        .result a { color: #0077cc; }
-    </style>
+  <meta charset="utf-8" />
+  <title>MRI → CT Converter (demo)</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; }
+    .card { border: 1px solid #ddd; padding: 20px; border-radius: 6px; }
+    .controls { margin-top: 10px; }
+    #status { margin-top: 10px; color: #333; }
+    #filename { font-weight: bold; }
+    button[disabled] { opacity: 0.6; }
+  </style>
 </head>
 <body>
-    <h1>MRI to CT Converter</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="mri">Choose an MRI file to upload:</label>
-            <input type="file" id="mri" name="mri" accept=".nii,.dcm,.img" required>
-        </div>
-        <button type="submit">Convert</button>
-    </form>
-    <div id="status"></div>
-    <div class="result" id="result"></div>
-    <div class="error" id="error"></div>
+  <div class="card">
+    <h1>MRI → CT Converter (demo)</h1>
+    <p>
+      Select a file (single file) and click "Upload & Convert". This demo creates a placeholder CT file
+      and returns it inside a zip so you can verify the round-trip download.
+    </p>
 
-    <script>
-        document.getElementById('uploadForm').onsubmit = async function(event) {
-            event.preventDefault();
-            document.getElementById('status').textContent = 'Uploading and converting, please wait...';
-            document.getElementById('result').textContent = '';
-            document.getElementById('error').textContent = '';
-            let formData = new FormData(this);
+    <div>
+      <label for="fileInput">Choose file:</label>
+      <input id="fileInput" type="file" />
+      <div class="controls">
+        <button id="uploadBtn">Upload & Convert</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+      <div id="status">No file selected.</div>
+    </div>
+  </div>
 
-            try {
-                let res = await fetch('/convert', {method: 'POST', body: formData});
-                if (!res.ok) {
-                    throw new Error('Conversion failed.');
-                }
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                document.getElementById('status').textContent = '';
-                document.getElementById('result').innerHTML = `
-                    <a href="${url}" download="ct_scan.png">
-                        ⬇️ Download Converted CT Scan
-                    </a>
-                `;
-            } catch (err) {
-                document.getElementById('status').textContent = '';
-                document.getElementById('error').textContent = err.message;
-            }
-        };
-    </script>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const status = document.getElementById('status');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length === 0) {
+        status.textContent = 'No file selected.';
+      } else {
+        status.innerHTML = 'Selected: <span id="filename">' + fileInput.files[0].name + '</span>';
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      status.textContent = 'No file selected.';
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please choose a file first.');
+        return;
+      }
+      const file = fileInput.files[0];
+
+      uploadBtn.disabled = true;
+      clearBtn.disabled = true;
+      status.textContent = 'Uploading and converting...';
+
+      try {
+        const form = new FormData();
+        // The backend accepts 'file' (single) or 'files' (multiple). Use 'file' for simplicity.
+        form.append('file', file, file.name);
+
+        const resp = await fetch('/api/convert', {
+          method: 'POST',
+          body: form
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error('Server error: ' + resp.status + ' ' + text);
+        }
+
+        const blob = await resp.blob();
+        // Create temporary download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'converted_cts.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        status.textContent = 'Download started (converted_cts.zip).';
+      } catch (err) {
+        console.error(err);
+        status.textContent = 'Error: ' + err.message;
+        alert('Upload or conversion failed: ' + err.message);
+      } finally {
+        uploadBtn.disabled = false;
+        clearBtn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
+```
