@@ -25,24 +25,11 @@
     <h1>MRI to CT Converter</h1>
     <form id="uploadForm" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="mri">Upload a folder of MRI images:</label>
-
-            <!-- Folder upload enabled -->
-            <input 
-                type="file"
-                id="mri"
-                name="mri"
-                accept=".nii,.dcm,.img"
-                webkitdirectory
-                directory
-                multiple
-                required
-            >
+            <label for="mri">Choose an MRI file to upload:</label>
+            <input type="file" id="mri" name="mri" accept=".nii,.dcm,.img" required>
         </div>
-
         <button type="submit">Convert</button>
     </form>
-
     <div id="status"></div>
     <div class="result" id="result"></div>
     <div class="error" id="error"></div>
@@ -50,41 +37,24 @@
     <script>
         document.getElementById('uploadForm').onsubmit = async function(event) {
             event.preventDefault();
-
             document.getElementById('status').textContent = 'Uploading and converting, please wait...';
             document.getElementById('result').textContent = '';
             document.getElementById('error').textContent = '';
-
-            let formData = new FormData();
-
-            // Add all files individually
-            const files = document.getElementById('mri').files;
-            for (let file of files) {
-                formData.append('mri_files', file); 
-            }
+            let formData = new FormData(this);
 
             try {
-                let res = await fetch('/convert', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                let res = await fetch('/convert', {method: 'POST', body: formData});
                 if (!res.ok) {
                     throw new Error('Conversion failed.');
                 }
-
-                // Expecting a zip or multi-file output
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
-
                 document.getElementById('status').textContent = '';
-
                 document.getElementById('result').innerHTML = `
-                    <a href="${url}" download="converted_ct_results.zip">
-                        ⬇️ Download Converted CT Results (ZIP)
+                    <a href="${url}" download="ct_scan.png">
+                        ⬇️ Download Converted CT Scan
                     </a>
                 `;
-
             } catch (err) {
                 document.getElementById('status').textContent = '';
                 document.getElementById('error').textContent = err.message;
